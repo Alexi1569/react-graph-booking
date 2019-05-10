@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const graphqlHttp = require('express-graphql');
 const { buildSchema } = require('graphql');
 
+// 5 series rdy
+
 const PORT = process.env.PORT || 4000;
 const app = express();
 
