@@ -2,13 +2,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const graphqlHttp = require('express-graphql');
 const { buildSchema } = require('graphql');
+const mongoose = require('mongoose');
+
+const Event = require('./models/event');
 
 // 5 series rdy
 
 const PORT = process.env.PORT || 4000;
 const app = express();
-
-const events = [];
 
 app.use(bodyParser.json());
 
@@ -24,12 +25,20 @@ app.use(
         date: String!
       }
 
+      type User {
+        _id: ID!,
+        email: String!,
+        password: String!
+      }
+
       input EventInput {
         title: String!
         description: String!
         price: Float!
         date: String!
       }
+
+      input
 
       type RootQuery {
         events: [Event!]!    
@@ -46,24 +55,44 @@ app.use(
     `),
     rootValue: {
       events() {
-        return events;
+        return Event.find({})
+          .then(res => {
+            return res.map(event => {
+              return { ...event._doc };
+            });
+          })
+          .catch(err => {
+            throw err;
+          });
       },
       createEvent(args) {
-        const event = {
-          _id: Math.random().toString(),
+        const event = new Event({
           title: args.event.title,
           description: args.event.description,
           price: +args.event.price,
-          date: args.event.date
-        };
+          date: new Date(args.event.date)
+        });
 
-        events.push(event);
-        return event;
+        return event
+          .save()
+          .then(res => {
+            return { ...res._doc };
+          })
+          .catch(err => {
+            throw err;
+          });
       }
     },
     graphiql: true
   })
 );
+
+mongoose
+  .connect(
+    `mongodb://admin:123admin@ds155396.mlab.com:55396/react-graphql-booking`
+  )
+  .then(() => console.log('Database connected'))
+  .catch(err => console.log(err));
 
 app.listen(PORT, () => {
   console.log(`Server is running on ${PORT}`);
