@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const graphqlHttp = require('express-graphql');
 const mongoose = require('mongoose');
 
+const { isAuth } = require('./middleware/isAuth');
 const schema = require('./graphql/schema');
 const resolvers = require('./graphql/resolvers');
 
@@ -12,6 +13,7 @@ const PORT = process.env.PORT || 4000;
 const app = express();
 
 app.use(bodyParser.json());
+app.use(isAuth);
 
 app.use(
   '/graphql',
